@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Orientando - SISGIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .sidebar-item:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .active-sidebar { background-color: rgba(59, 130, 246, 0.1); border-right: 3px solid #3b82f6; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl border-r border-gray-200 z-30">
+        <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center space-x-3"><div class="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-white"></i></div><span class="text-xl font-bold text-gray-800">SISGIC</span></div>
+        </div>
+        <nav class="mt-8">
+            <div class="px-4 space-y-2">
+                <button data-section="dashboard" class="sidebar-item active-sidebar w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-home w-5 h-5 mr-3"></i> Dashboard</button>
+                <button data-section="projects" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-project-diagram w-5 h-5 mr-3"></i> Meus Projetos</button>
+                <button data-section="reunioes" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-calendar-alt w-5 h-5 mr-3"></i> Reuniões</button>
+            </div>
+            <div class="absolute bottom-0 w-full px-4 mb-4">
+                <div class="border-t border-gray-200 pt-4"><button id="logoutButton" class="w-full flex items-center px-4 py-3 text-left text-red-600 rounded-lg hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i> Sair</button></div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="ml-64">
+        <header class="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+            <h1 class="text-2xl font-bold text-gray-800" id="pageTitle">Dashboard</h1>
+            <div class="flex items-center space-x-3">
+                <div class="text-right"><p id="userName" class="text-sm font-medium text-gray-800">Carregando...</p><p class="text-xs text-gray-600">Orientando(a)</p></div>
+                <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center"><span class="text-white font-medium">--</span></div>
+            </div>
+        </header>
+
+        <main class="p-6">
+            <div id="dashboardSection" class="fade-in"></div>
+
+            <div id="projectsSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Projetos</h2>
+                        <p class="text-gray-600">Visualize o andamento dos seus projetos de orientação.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid"></div>
+            </div>
+
+            <div id="projectDetailSection" class="hidden fade-in">
+                <div class="mb-8">
+                    <button id="backToProjectsBtn" class="text-blue-600 hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Voltar para Projetos</button>
+                    <h2 id="projectDetailTitle" class="text-3xl font-bold text-gray-800 truncate">Carregando...</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border">
+                        <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Detalhes do Projeto</h3>
+                        <div id="projectDetailInfo" class="space-y-3"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border">
+                        <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Seu Orientador</h3>
+                        <div id="projectAdvisorInfo"></div>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-6">Etapas do Projeto</h3>
+                    <div id="etapasContainer" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="reunioesSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Minhas Reuniões</h2>
+                        <p class="text-gray-600">Confira os encontros agendados com seu orientador.</p>
+                    </div>
+                </div>
+                <div id="reunioesGrid" class="space-y-4"></div>
+            </div>
+        </main>
+    </div>
+    
+    <script type="module" src="js_orientando/main_orientando.js"></script>
+</body>
+</html>

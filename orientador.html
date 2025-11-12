@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Orientador - SISGIC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .sidebar-item:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .active-sidebar { background-color: rgba(59, 130, 246, 0.1); border-right: 3px solid #3b82f6; }
+        .hidden { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl border-r border-gray-200 z-30">
+        <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white"></i>
+                </div>
+                <span class="text-xl font-bold text-gray-800">SISGIC</span>
+            </div>
+        </div>
+        <nav class="mt-8">
+            <div class="px-4 space-y-2">
+                <button data-section="dashboard" class="sidebar-item active-sidebar w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-home w-5 h-5 mr-3"></i> Dashboard</button>
+                <button data-section="projects" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-project-diagram w-5 h-5 mr-3"></i> Projetos</button>
+                <button data-section="reunioes" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-calendar-alt w-5 h-5 mr-3"></i> Reuniões</button>
+                <button data-section="students" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg"><i class="fas fa-users w-5 h-5 mr-3"></i> Orientandos</button>
+            </div>
+            <div class="absolute bottom-0 w-full px-4 mb-4">
+                <div class="border-t border-gray-200 pt-4">
+                    <button id="logoutButton" class="w-full flex items-center px-4 py-3 text-left text-red-600 rounded-lg hover:bg-red-50 transition-colors"><i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i> Sair</button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div class="ml-64">
+        <header class="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+            <h1 class="text-2xl font-bold text-gray-800" id="pageTitle">Dashboard</h1>
+            <div class="flex items-center space-x-3">
+                <div class="text-right">
+                    <p id="userName" class="text-sm font-medium text-gray-800">Carregando...</p>
+                    <p class="text-xs text-gray-600">Orientador(a)</p>
+                </div>
+                <div id="userAvatar" class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+                    <span class="text-white font-medium">--</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="p-6">
+            <div id="dashboardSection" class="fade-in"></div>
+
+            <div id="projectsSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Gestão de Projetos</h2>
+                        <p class="text-gray-600">Gerencie todos os projetos de orientação.</p>
+                    </div>
+                    <button id="newProjectBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        <i class="fas fa-plus mr-2"></i>Novo Projeto
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid"></div>
+            </div>
+
+            <div id="projectDetailSection" class="hidden fade-in">
+                <div class="mb-8">
+                    <button id="backToProjectsBtn" class="text-blue-600 hover:underline mb-4"><i class="fas fa-arrow-left mr-2"></i>Voltar para Projetos</button>
+                    <h2 id="projectDetailTitle" class="text-3xl font-bold text-gray-800 truncate">Carregando...</h2>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-md border">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-gray-800 flex-grow">Detalhes do Projeto</h3>
+                            <div class="flex space-x-2">
+                                <button id="editProjectBtn" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-600">
+                                    <i class="fas fa-pencil-alt mr-2"></i>Editar
+                                </button>
+                                <button id="deleteProjectBtn" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600">
+                                    <i class="fas fa-trash-alt mr-2"></i>Excluir
+                                </button>
+                            </div>
+                        </div>
+                        <div id="projectDetailInfo" class="space-y-3 border-t pt-4"></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-md border">
+                        <h3 class="text-xl font-bold text-gray-800 border-b pb-3 mb-4">Orientando</h3>
+                        <div id="projectDetailStudent"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-2xl font-bold text-gray-800">Etapas e Tarefas do Projeto</h3>
+                    <button id="newEtapaBtn" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-medium hover:from-green-600 hover:to-emerald-600 transition-all">
+                        <i class="fas fa-plus mr-2"></i>Nova Etapa
+                    </button>
+                </div>
+                <div id="etapasContainer" class="space-y-4"></div>
+            </div>
+
+            <div id="studentsSection" class="hidden fade-in">
+                 <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Orientandos</h2>
+                        <p class="text-gray-600">Lista de todos os alunos sob sua orientação.</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="studentsGrid"></div>
+            </div>
+
+            <div id="reunioesSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Agenda de Reuniões</h2>
+                        <p class="text-gray-600">Gerencie os encontros com seus orientandos.</p>
+                    </div>
+                    <button id="newReuniaoBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        <i class="fas fa-plus mr-2"></i>Agendar Reunião
+                    </button>
+                </div>
+                <div id="reunioesGrid" class="space-y-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="createProjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Criar Novo Projeto</h2>
+            <form id="createProjectForm" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Título do Projeto</label>
+                        <input name="titulo" type="text" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Tipo</label>
+                        <select name="tipo" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                            <option value="TCC">TCC</option>
+                            <option value="Iniciação Científica">Iniciação Científica</option>
+                            <option value="Dissertação">Dissertação</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Orientando</label>
+                    <select name="orientando_id" id="createProjectStudentSelect" required class="mt-1 w-full px-4 py-2 border rounded-lg"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <textarea name="descricao" rows="3" class="mt-1 w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data de Início</label>
+                        <input name="data_inicio" type="date" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Prazo Final</label>
+                        <input name="data_fim" type="date" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="cancelCreateProjectBtn" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Criar Projeto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="editProjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl fade-in">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Editar Projeto</h2>
+            <form id="editProjectForm" class="space-y-4">
+                <input type="hidden" name="projeto_id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Título do Projeto</label>
+                        <input name="titulo" type="text" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Orientando</label>
+                    <select name="orientando_id" id="editProjectStudentSelect" required class="mt-1 w-full px-4 py-2 border rounded-lg"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <textarea name="descricao" rows="3" class="mt-1 w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Data de Início</label>
+                        <input name="data_inicio" type="date" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Prazo Final</label>
+                        <input name="data_fim" type="date" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="cancelEditProjectBtn" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="etapaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg fade-in">
+            <h2 id="etapaModalTitle" class="text-2xl font-bold text-gray-800 mb-6">Nova Etapa</h2>
+            <form id="etapaForm" class="space-y-4">
+                <input type="hidden" name="etapa_id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Título da Etapa</label>
+                    <input name="titulo" type="text" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Ordem</label>
+                    <input name="ordem" type="number" required class="mt-1 w-full px-4 py-2 border rounded-lg" min="1">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <textarea name="descricao" rows="4" class="mt-1 w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="cancelEtapaBtn" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="tarefaModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg fade-in">
+            <h2 id="tarefaModalTitle" class="text-2xl font-bold text-gray-800 mb-6">Editar Tarefa</h2>
+            <form id="tarefaForm" class="space-y-4">
+                <input type="hidden" name="tarefa_id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Título da Tarefa</label>
+                    <input name="titulo" type="text" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descrição</label>
+                    <textarea name="descricao" rows="4" class="mt-1 w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="cancelTarefaBtn" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="reuniaoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl fade-in">
+            <h2 id="reuniaoModalTitle" class="text-2xl font-bold text-gray-800 mb-6">Agendar Nova Reunião</h2>
+            <form id="reuniaoForm" class="space-y-4">
+                <input type="hidden" name="reuniao_id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Projeto Vinculado</label>
+                    <select name="projeto_id" id="reuniaoProjectSelect" required class="mt-1 w-full px-4 py-2 border rounded-lg"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Título da Reunião</label>
+                    <input name="titulo" type="text" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Data e Hora</label>
+                    <input name="data_hora" type="datetime-local" required class="mt-1 w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Link da Reunião (Opcional)</label>
+                    <input name="link" type="url" class="mt-1 w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Pauta / Assuntos</label>
+                    <textarea name="pauta" rows="3" class="mt-1 w-full px-4 py-2 border rounded-lg"></textarea>
+                </div>
+                <div class="flex justify-end space-x-4 pt-4">
+                    <button type="button" id="cancelReuniaoBtn" class="px-6 py-2 border rounded-lg hover:bg-gray-100">Cancelar</button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js_orientador/main.js"></script>
+</body>
+</html>

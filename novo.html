@@ -1,0 +1,2129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Orientação Acadêmica - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        .calendar-day { transition: all 0.2s ease; }
+        .calendar-day:hover { transform: scale(1.05); }
+        .project-card { transition: all 0.3s ease; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .notification-item { transition: all 0.2s ease; }
+        .notification-item:hover { background-color: #f3f4f6; }
+        .progress-ring { transform: rotate(-90deg); }
+        .chat-message { animation: slideInMessage 0.3s ease-out; }
+        @keyframes slideInMessage { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .task-item { transition: all 0.2s ease; }
+        .task-item:hover { background-color: #f9fafb; }
+        .document-item { transition: all 0.2s ease; }
+        .document-item:hover { background-color: #f3f4f6; transform: translateX(4px); }
+        .metric-card { transition: all 0.3s ease; }
+        .metric-card:hover { transform: translateY(-4px); }
+        .sidebar-item { transition: all 0.2s ease; }
+        .sidebar-item:hover { background-color: rgba(59, 130, 246, 0.1); }
+        .active-sidebar { background-color: rgba(59, 130, 246, 0.1); border-right: 3px solid #3b82f6; }
+    </style>
+</head>
+
+<script>
+    // Configuração do cliente Supabase (igual à da tela de login)
+    const SUPABASE_URL = 'https://brtghaeqvvzqerarlrpz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydGdoYWVxdnZ6cWVyYXJscnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTgwMjk5MjYsImV4cCI6MjA3MzYwNTkyNn0.cNfHyO39bdJKaF_fB2adHrgHOGdY_f5I3iucaR_mMzk';
+    const { createClient } = supabase;
+    const _supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Função para verificar a sessão do usuário
+    async function checkSession() {
+        const { data, error } = await _supabase.auth.getSession();
+
+        // Se não houver sessão ativa ou ocorrer um erro, redireciona para o login
+        if (error || !data.session) {
+            console.log("Nenhum usuário logado. Redirecionando...");
+            window.location.href =ara o caminho da sua tela de login
+        } else {
+            // Se houver sessão, exibe os dados do usuário no console (ou na página)
+            console.log('Sessão ativa para:', data.session.user.email);
+            // Aqui você pode carregar o conteúdo da página
+        }
+    }
+
+    // Chama a função de verificação assim que a página carrega
+    checkSession();
+</script>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 w-64 bg-white shadow-xl border-r border-gray-200 z-30">
+        <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-blue-600 to-indigo-600 w-10 h-10 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white"></i>
+                </div>
+                <span class="text-xl font-bold text-gray-800">SISGIC</span>
+            </div>
+        </div>
+        
+        <nav class="mt-8">
+            <div class="px-4 space-y-2">
+                <button onclick="showSection('dashboard')" class="sidebar-item active-sidebar w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg">
+                    <i class="fas fa-home w-5 h-5 mr-3"></i>
+                    Dashboard
+                </button>
+                
+                <button onclick="showSection('projects')" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg">
+                    <i class="fas fa-project-diagram w-5 h-5 mr-3"></i>
+                    Projetos
+                </button>
+                
+                <button onclick="showSection('students')" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg">
+                    <i class="fas fa-users w-5 h-5 mr-3"></i>
+                    Orientandos
+                </button>
+                
+                <button onclick="showSection('calendar')" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg">
+                    <i class="fas fa-calendar w-5 h-5 mr-3"></i>
+                    Calendário
+                </button>
+                
+
+                
+                <button onclick="showSection('settings')" class="sidebar-item w-full flex items-center px-4 py-3 text-left text-gray-700 rounded-lg">
+                    <i class="fas fa-cog w-5 h-5 mr-3"></i>
+                    Configurações
+                </button>
+            </div>
+            
+            <div class="mt-8 px-4">
+                <div class="border-t border-gray-200 pt-4">
+                    <button onclick="logout()" class="w-full flex items-center px-4 py-3 text-left text-red-600 rounded-lg hover:bg-red-50 transition-colors">
+                        <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="ml-64">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6">
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-800" id="pageTitle">Dashboard</h1>
+                <div class="flex items-center space-x-2 text-sm text-gray-500">
+                    <span id="currentDate"></span>
+                    <span>•</span>
+                    <span id="currentTime"></span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <!-- Search -->
+                <div class="relative">
+                    <input type="text" placeholder="Buscar..." class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                
+                <!-- Notifications -->
+                <div class="relative">
+                    <button onclick="toggleNotifications()" class="relative p-2 text-gray-600 hover:text-gray-800 transition-colors">
+                        <i class="fas fa-bell text-xl"></i>
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">5</span>
+                    </button>
+                    
+                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                        <div class="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h3 class="font-semibold text-gray-800">Notificações</h3>
+                            <button class="text-blue-600 text-sm hover:text-blue-800">Marcar todas como lidas</button>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto">
+                            <div class="notification-item p-4 border-b border-gray-100 cursor-pointer">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800 font-medium">Nova reunião agendada</p>
+                                        <p class="text-xs text-gray-600">Maria Santos - Amanhã às 14h</p>
+                                        <p class="text-xs text-gray-500 mt-1">Há 2 horas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-item p-4 border-b border-gray-100 cursor-pointer">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800 font-medium">Documento aprovado</p>
+                                        <p class="text-xs text-gray-600">Capítulo 3 - Pedro Lima</p>
+                                        <p class="text-xs text-gray-500 mt-1">Há 4 horas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="notification-item p-4 border-b border-gray-100 cursor-pointer">
+                                <div class="flex items-start space-x-3">
+                                    <div class="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-800 font-medium">Prazo próximo</p>
+                                        <p class="text-xs text-gray-600">Entrega em 3 dias - Ana Costa</p>
+                                        <p class="text-xs text-gray-500 mt-1">Há 1 dia</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4 text-center">
+                            <button class="text-blue-600 text-sm hover:text-blue-800">Ver todas as notificações</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Menu -->
+                <div class="flex items-center space-x-3">
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-800">Prof. João Silva</p>
+                        <p class="text-xs text-gray-600">Orientador</p>
+                    </div>
+                    <div class="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-medium">JS</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="p-6">
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="fade-in">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Projetos Ativos</p>
+                                <p class="text-3xl font-bold text-gray-800">12</p>
+                                <p class="text-xs text-green-600 mt-1">↗ +2 este mês</p>
+                            </div>
+                            <div class="bg-blue-100 p-3 rounded-full">
+                                <i class="fas fa-project-diagram text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Orientandos</p>
+                                <p class="text-3xl font-bold text-gray-800">18</p>
+                                <p class="text-xs text-green-600 mt-1">↗ +3 este semestre</p>
+                            </div>
+                            <div class="bg-green-100 p-3 rounded-full">
+                                <i class="fas fa-users text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-orange-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Reuniões Hoje</p>
+                                <p class="text-3xl font-bold text-gray-800">4</p>
+                                <p class="text-xs text-blue-600 mt-1">Próxima às 14h</p>
+                            </div>
+                            <div class="bg-orange-100 p-3 rounded-full">
+                                <i class="fas fa-calendar-day text-orange-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm font-medium text-gray-600">Taxa de Conclusão</p>
+                                <p class="text-3xl font-bold text-gray-800">87%</p>
+                                <p class="text-xs text-green-600 mt-1">↗ +5% este ano</p>
+                            </div>
+                            <div class="bg-purple-100 p-3 rounded-full">
+                                <i class="fas fa-chart-line text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts and Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                                   
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Ações Rápidas</h3>
+                        <div class="space-y-4">
+                            <button onclick="showCreateProject()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center">
+                                <i class="fas fa-plus mr-3"></i>
+                                Novo Projeto
+                            </button>
+                            
+                            <button onclick="showScheduleMeeting()" class="w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white p-4 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all flex items-center">
+                                <i class="fas fa-calendar-plus mr-3"></i>
+                                Agendar Reunião
+                            </button>
+                            
+                            <button onclick="showSection('documents')" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all flex items-center">
+                                <i class="fas fa-upload mr-3"></i>
+                                Upload Documento
+                            </button>
+                            
+                            <button onclick="showSection('reports')" class="w-full bg-gradient-to-r from-orange-600 to-red-600 text-white p-4 rounded-lg hover:from-orange-700 hover:to-red-700 transition-all flex items-center">
+                                <i class="fas fa-chart-bar mr-3"></i>
+                                Gerar Relatório
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Recent Projects -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Projetos Recentes</h3>
+                            <button onclick="showSection('projects')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver todos</button>
+                        </div>
+                        
+                        <div class="space-y-4" id="recentProjects">
+                            <!-- Projects will be populated here -->
+                        </div>
+                    </div>
+                    <!-- Upcoming Deadlines -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Próximos Prazos</h3>
+                            <button onclick="showSection('calendar')" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Ver calendário</button>
+                        </div>
+                        
+                        <div class="space-y-4" id="upcomingDeadlines">
+                            <!-- Deadlines will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Section -->
+            <div id="projectsSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Gestão de Projetos</h2>
+                        <p class="text-gray-600">Gerencie todos os projetos de orientação</p>
+                    </div>
+                    <button onclick="showCreateProject()" class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        <i class="fas fa-plus mr-2"></i>Novo Projeto
+                    </button>
+                </div>
+
+                <!-- Project Filters -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option>Todos os Status</option>
+                            <option>Planejamento</option>
+                            <option>Em andamento</option>
+                            <option>Em revisão</option>
+                            <option>Concluído</option>
+                            <option>Pausado</option>
+                        </select>
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option>Todos os Orientandos</option>
+                            <option>Maria Santos</option>
+                            <option>Pedro Lima</option>
+                            <option>Ana Costa</option>
+                        </select>
+                        <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option>Todos os Tipos</option>
+                            <option>TCC</option>
+                            <option>Dissertação</option>
+                            <option>Tese</option>
+                            <option>Iniciação Científica</option>
+                        </select>
+                        <input type="text" placeholder="Buscar projetos..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <!-- Projects Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projectsGrid">
+                    <!-- Projects will be populated here -->
+                </div>
+            </div>
+
+            <!-- Students Section -->
+            <div id="studentsSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Orientandos</h2>
+                        <p class="text-gray-600">Gerencie seus orientandos e acompanhe o progresso</p>
+                    </div>
+                    <button onclick="showAddStudent()" class="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all">
+                        <i class="fas fa-user-plus mr-2"></i>Adicionar Orientando
+                    </button>
+                </div>
+
+                <!-- Students Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="studentsGrid">
+                    <!-- Students will be populated here -->
+                </div>
+            </div>
+
+            <!-- Calendar Section -->
+            <div id="calendarSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Calendário e Agenda</h2>
+                        <p class="text-gray-600">Gerencie eventos, reuniões e prazos</p>
+                    </div>
+                    <button onclick="showCreateEvent()" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all">
+                        <i class="fas fa-plus mr-2"></i>Novo Evento
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <!-- Calendar -->
+                    <div class="lg:col-span-3 bg-white rounded-xl shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800">Dezembro 2024</h3>
+                            <div class="flex space-x-2">
+                                <button class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-1 mb-4">
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Dom</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Seg</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Ter</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Qua</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Qui</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Sex</div>
+                            <div class="text-center text-sm font-medium text-gray-600 py-2">Sáb</div>
+                        </div>
+                        
+                        <div class="grid grid-cols-7 gap-1" id="calendarGrid">
+                            <!-- Calendar will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Events Sidebar -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Eventos do Dia</h3>
+                        <div class="space-y-4" id="dayEvents">
+                            <!-- Events will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Detail Section -->
+            <div id="projectDetailSection" class="hidden fade-in">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-4">
+                        <button onclick="showSection('projects')" class="p-2 text-gray-600 hover:text-gray-800 rounded-lg hover:bg-gray-100">
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2" id="projectDetailTitle">Sistema de Gestão Acadêmica</h2>
+                            <p class="text-gray-600" id="projectDetailDescription">Desenvolvimento de um sistema web para gestão de cursos e alunos</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="editCurrentProject()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-edit mr-2"></i>Editar Projeto
+                        </button>
+                        <button onclick="showCreateStage()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Nova Etapa
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Project Overview -->
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+                    <!-- Project Info -->
+                    <div class="lg:col-span-3 bg-white rounded-xl shadow-lg p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-blue-600" id="projectProgress">75%</div>
+                                <div class="text-sm text-gray-600">Progresso Geral</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                    <div class="h-2 rounded-full bg-blue-500" style="width: 75%" id="projectProgressBar"></div>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-green-600" id="completedStages">3</div>
+                                <div class="text-sm text-gray-600">Etapas Concluídas</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-3xl font-bold text-orange-600" id="pendingTasks">8</div>
+                                <div class="text-sm text-gray-600">Tarefas Pendentes</div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-3">Informações do Projeto</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Tipo:</span>
+                                        <span class="font-medium" id="projectType">TCC</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Status:</span>
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs" id="projectStatus">Em andamento</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Prioridade:</span>
+                                        <span class="text-red-600 font-medium" id="projectPriority">Alta</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Data de Início:</span>
+                                        <span class="font-medium" id="projectStartDate">15/08/2024</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span class="text-gray-600">Prazo Final:</span>
+                                        <span class="font-medium" id="projectEndDate">20/12/2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="font-semibold text-gray-800 mb-3">Orientandos</h4>
+                                <div class="space-y-3" id="projectStudents">
+                                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                                        <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white font-medium text-sm">MS</span>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="font-medium text-gray-800">Maria Santos</div>
+                                            <div class="text-sm text-gray-600">maria.santos@email.com</div>
+                                        </div>
+                                        <button onclick="chatWithStudent(1)" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg">
+                                            <i class="fas fa-comments"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Ações Rápidas</h3>
+                        <div class="space-y-3">
+                            <button onclick="showCreateStage()" class="w-full bg-green-600 text-white p-3 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-plus mr-2"></i>Nova Etapa
+                            </button>
+                            <button onclick="showScheduleMeeting()" class="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors text-sm">
+                                <i class="fas fa-calendar mr-2"></i>Agendar Reunião
+                            </button>
+                            <button onclick="showUploadDocument()" class="w-full bg-purple-600 text-white p-3 rounded-lg hover:bg-purple-700 transition-colors text-sm">
+                                <i class="fas fa-upload mr-2"></i>Upload Documento
+                            </button>
+                            <button onclick="generateProjectReport()" class="w-full bg-orange-600 text-white p-3 rounded-lg hover:bg-orange-700 transition-colors text-sm">
+                                <i class="fas fa-chart-bar mr-2"></i>Relatório
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Project Stages -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-bold text-gray-800">Etapas do Projeto</h3>
+                        <div class="flex space-x-2">
+                            <select class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500">
+                                <option>Todas as Etapas</option>
+                                <option>Não Iniciadas</option>
+                                <option>Em Progresso</option>
+                                <option>Concluídas</option>
+                            </select>
+                            <button onclick="showCreateStage()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                                <i class="fas fa-plus mr-2"></i>Nova Etapa
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4" id="projectStages">
+                        <!-- Stages will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div id="settingsSection" class="hidden fade-in">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Configurações</h2>
+                    <p class="text-gray-600">Personalize sua experiência no sistema</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Profile Settings -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Perfil</h3>
+                        <div class="space-y-4">
+                            <div class="text-center">
+                                <div class="w-20 h-20 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span class="text-white text-2xl font-bold">JS</span>
+                                </div>
+                                <button class="text-blue-600 text-sm hover:text-blue-800">Alterar foto</button>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Nome</label>
+                                <input type="text" value="Prof. João Silva" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
+                                <input type="email" value="joao.silva@universidade.edu" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Departamento</label>
+                                <input type="text" value="Ciência da Computação" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            
+                            <button class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                Salvar Alterações
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Notificações</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-800">E-mail</p>
+                                    <p class="text-sm text-gray-600">Receber notificações por e-mail</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-800">Push</p>
+                                    <p class="text-sm text-gray-600">Notificações no navegador</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-800">Reuniões</p>
+                                    <p class="text-sm text-gray-600">Lembretes de reuniões</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="font-medium text-gray-800">Prazos</p>
+                                    <p class="text-sm text-gray-600">Alertas de prazos próximos</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-6">Sistema</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Tema</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Claro</option>
+                                    <option>Escuro</option>
+                                    <option>Automático</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>Português (BR)</option>
+                                    <option>English</option>
+                                    <option>Español</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Fuso Horário</label>
+                                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option>America/Sao_Paulo</option>
+                                    <option>America/New_York</option>
+                                    <option>Europe/London</option>
+                                </select>
+                            </div>
+                            
+                            <div class="pt-4 border-t border-gray-200">
+                                <button class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors mb-2">
+                                    Alterar Senha
+                                </button>
+                                <button class="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition-colors">
+                                    Exportar Dados
+                                </button>
+                            </div>
+                            
+                            <button id="logoutButton">Sair (Logout)</button>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals will go here -->
+    <!-- Create Stage Modal -->
+    <div id="createStageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Criar Nova Etapa</h2>
+                <button onclick="hideCreateStage()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6" onsubmit="createStage(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Etapa</label>
+                    <input type="text" id="stageName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="stageDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="Descreva os objetivos desta etapa..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                        <input type="date" id="stageStartDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Conclusão</label>
+                        <input type="date" id="stageEndDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                    <select id="stagePriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média" selected>Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideCreateStage()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all">
+                        Criar Etapa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Stage Modal -->
+    <div id="editStageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Editar Etapa</h2>
+                <button onclick="hideEditStage()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6" onsubmit="updateStage(event)">
+                <input type="hidden" id="editStageId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Etapa</label>
+                    <input type="text" id="editStageName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="editStageDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                        <input type="date" id="editStageStartDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Conclusão</label>
+                        <input type="date" id="editStageEndDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="editStageStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="Não Iniciada">Não Iniciada</option>
+                            <option value="Em Progresso">Em Progresso</option>
+                            <option value="Concluída">Concluída</option>
+                            <option value="Pausada">Pausada</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                    <select id="editStagePriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="Baixa">Baixa</option>
+                        <option value="Média">Média</option>
+                        <option value="Alta">Alta</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideEditStage()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Task Modal -->
+    <div id="createTaskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Criar Nova Tarefa</h2>
+                <button onclick="hideCreateTask()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6" onsubmit="createTask(event)">
+                <input type="hidden" id="taskStageId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Tarefa</label>
+                    <input type="text" id="taskName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="taskDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Descreva o que deve ser feito..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prazo</label>
+                        <input type="date" id="taskDueDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                        <select id="taskPriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média" selected>Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Responsável</label>
+                    <select id="taskAssignee" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="">Selecione o responsável...</option>
+                        <option value="Maria Santos">Maria Santos</option>
+                        <option value="Pedro Lima">Pedro Lima</option>
+                        <option value="Ana Costa">Ana Costa</option>
+                        <option value="Prof. João Silva">Prof. João Silva</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideCreateTask()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all">
+                        Criar Tarefa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Editar Tarefa</h2>
+                <button onclick="hideEditTask()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6" onsubmit="updateTask(event)">
+                <input type="hidden" id="editTaskId">
+                <input type="hidden" id="editTaskStageId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Tarefa</label>
+                    <input type="text" id="editTaskName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="editTaskDescription" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prazo</label>
+                        <input type="date" id="editTaskDueDate" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select id="editTaskStatus" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em Progresso">Em Progresso</option>
+                            <option value="Concluída">Concluída</option>
+                            <option value="Cancelada">Cancelada</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prioridade</label>
+                        <select id="editTaskPriority" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Responsável</label>
+                    <select id="editTaskAssignee" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Selecione o responsável...</option>
+                        <option value="Maria Santos">Maria Santos</option>
+                        <option value="Pedro Lima">Pedro Lima</option>
+                        <option value="Ana Costa">Ana Costa</option>
+                        <option value="Prof. João Silva">Prof. João Silva</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideEditTask()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div id="createProjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-2xl max-h-screen overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Criar Novo Projeto</h2>
+                <button onclick="hideCreateProject()" class="text-gray-600 hover:text-gray-800">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Título do Projeto</label>
+                        <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipo</label>
+                        <select required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Selecione...</option>
+                            <option>TCC</option>
+                            <option>Dissertação</option>
+                            <option>Tese</option>
+                            <option>Iniciação Científica</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Orientando</label>
+                    <select required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">Selecione...</option>
+                        <option>Maria Santos</option>
+                        <option>Pedro Lima</option>
+                        <option>Ana Costa</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Descreva o projeto..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data de Início</label>
+                        <input type="date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prazo Final</label>
+                        <input type="date" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-4">
+                    <button type="button" onclick="hideCreateProject()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all">
+                        Criar Projeto
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample data
+        let currentProjectId = null;
+        
+        const projectStages = {
+            1: [
+                {
+                    id: 1,
+                    name: "Planejamento e Análise",
+                    description: "Definição de requisitos e análise do sistema",
+                    startDate: "2024-08-15",
+                    endDate: "2024-09-15",
+                    status: "Concluída",
+                    priority: "Alta",
+                    progress: 100,
+                    tasks: [
+                        { id: 1, name: "Levantamento de Requisitos", description: "Identificar e documentar todos os requisitos", dueDate: "2024-08-25", status: "Concluída", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 2, name: "Análise de Viabilidade", description: "Avaliar viabilidade técnica e econômica", dueDate: "2024-09-05", status: "Concluída", priority: "Média", assignee: "Prof. João Silva" },
+                        { id: 3, name: "Documentação Inicial", description: "Criar documentação base do projeto", dueDate: "2024-09-15", status: "Concluída", priority: "Alta", assignee: "Maria Santos" }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "Desenvolvimento",
+                    description: "Implementação do sistema e funcionalidades",
+                    startDate: "2024-09-16",
+                    endDate: "2024-11-30",
+                    status: "Em Progresso",
+                    priority: "Alta",
+                    progress: 65,
+                    tasks: [
+                        { id: 4, name: "Setup do Ambiente", description: "Configurar ambiente de desenvolvimento", dueDate: "2024-09-20", status: "Concluída", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 5, name: "Desenvolvimento Backend", description: "Implementar APIs e lógica de negócio", dueDate: "2024-10-30", status: "Em Progresso", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 6, name: "Desenvolvimento Frontend", description: "Criar interface do usuário", dueDate: "2024-11-15", status: "Em Progresso", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 7, name: "Integração de Sistemas", description: "Integrar frontend com backend", dueDate: "2024-11-30", status: "Pendente", priority: "Média", assignee: "Maria Santos" }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "Testes e Validação",
+                    description: "Testes do sistema e validação com usuários",
+                    startDate: "2024-12-01",
+                    endDate: "2024-12-15",
+                    status: "Não Iniciada",
+                    priority: "Alta",
+                    progress: 0,
+                    tasks: [
+                        { id: 8, name: "Testes Unitários", description: "Implementar e executar testes unitários", dueDate: "2024-12-05", status: "Pendente", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 9, name: "Testes de Integração", description: "Testar integração entre módulos", dueDate: "2024-12-10", status: "Pendente", priority: "Alta", assignee: "Maria Santos" },
+                        { id: 10, name: "Validação com Usuários", description: "Realizar testes com usuários finais", dueDate: "2024-12-15", status: "Pendente", priority: "Média", assignee: "Prof. João Silva" }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "Documentação Final",
+                    description: "Finalização da documentação e preparação para entrega",
+                    startDate: "2024-12-16",
+                    endDate: "2024-12-20",
+                    status: "Não Iniciada",
+                    priority: "Média",
+                    progress: 0,
+                    tasks: [
+                        { id: 11, name: "Manual do Usuário", description: "Criar manual completo do usuário", dueDate: "2024-12-18", status: "Pendente", priority: "Média", assignee: "Maria Santos" },
+                        { id: 12, name: "Documentação Técnica", description: "Finalizar documentação técnica", dueDate: "2024-12-19", status: "Pendente", priority: "Média", assignee: "Maria Santos" },
+                        { id: 13, name: "Preparação da Apresentação", description: "Preparar apresentação final", dueDate: "2024-12-20", status: "Pendente", priority: "Alta", assignee: "Maria Santos" }
+                    ]
+                }
+            ]
+        };
+        
+        const projects = [
+            {
+                id: 1,
+                title: "Sistema de Gestão Acadêmica",
+                student: "Maria Santos",
+                type: "TCC",
+                status: "Em andamento",
+                progress: 75,
+                description: "Desenvolvimento de um sistema web para gestão de cursos e alunos",
+                startDate: "2024-08-15",
+                endDate: "2024-12-20",
+                priority: "Alta"
+            },
+            {
+                id: 2,
+                title: "Análise de Dados Educacionais",
+                student: "Pedro Lima",
+                type: "Dissertação",
+                status: "Em revisão",
+                progress: 90,
+                description: "Análise estatística do desempenho acadêmico usando machine learning",
+                startDate: "2024-07-01",
+                endDate: "2024-12-15",
+                priority: "Média"
+            },
+            {
+                id: 3,
+                title: "App Mobile Educativo",
+                student: "Ana Costa",
+                type: "TCC",
+                status: "Em andamento",
+                progress: 45,
+                description: "Aplicativo móvel para ensino de matemática para crianças",
+                startDate: "2024-09-01",
+                endDate: "2025-02-28",
+                priority: "Alta"
+            }
+        ];
+
+        const students = [
+            {
+                id: 1,
+                name: "Maria Santos",
+                email: "maria.santos@email.com",
+                matricula: "2021001",
+                course: "Ciência da Computação",
+                level: "Graduação",
+                projects: 2,
+                status: "Ativo",
+                avatar: "MS"
+            },
+            {
+                id: 2,
+                name: "Pedro Lima",
+                email: "pedro.lima@email.com",
+                matricula: "2020045",
+                course: "Sistemas de Informação",
+                level: "Mestrado",
+                projects: 1,
+                status: "Ativo",
+                avatar: "PL"
+            },
+            {
+                id: 3,
+                name: "Ana Costa",
+                email: "ana.costa@email.com",
+                matricula: "2021078",
+                course: "Engenharia de Software",
+                level: "Graduação",
+                projects: 1,
+                status: "Ativo",
+                avatar: "AC"
+            }
+        ];
+
+        const tasks = [
+            {
+                id: 1,
+                title: "Revisar Capítulo 3",
+                project: "Sistema de Gestão",
+                student: "Maria Santos",
+                priority: "Alta",
+                dueDate: "2024-12-20",
+                status: "todo"
+            },
+            {
+                id: 2,
+                title: "Preparar Apresentação",
+                project: "Análise de Dados",
+                student: "Pedro Lima",
+                priority: "Média",
+                dueDate: "2024-12-18",
+                status: "inprogress"
+            },
+            {
+                id: 3,
+                title: "Implementar Funcionalidade",
+                project: "App Mobile",
+                student: "Ana Costa",
+                priority: "Alta",
+                dueDate: "2024-12-22",
+                status: "todo"
+            }
+        ];
+
+        const documents = [
+            {
+                id: 1,
+                name: "Capítulo_3_v2.pdf",
+                project: "Sistema de Gestão",
+                student: "Maria Santos",
+                size: "2.5 MB",
+                type: "PDF",
+                uploadDate: "2024-12-10",
+                version: "v2"
+            },
+            {
+                id: 2,
+                name: "Apresentacao_Defesa.pptx",
+                project: "Análise de Dados",
+                student: "Pedro Lima",
+                size: "8.1 MB",
+                type: "PowerPoint",
+                uploadDate: "2024-12-08",
+                version: "v1"
+            }
+        ];
+
+        const meetings = [
+            {
+                id: 1,
+                title: "Reunião de Orientação - Maria",
+                student: "Maria Santos",
+                date: "2024-12-15",
+                time: "14:00",
+                duration: "1h",
+                type: "Online",
+                status: "Agendada"
+            },
+            {
+                id: 2,
+                title: "Defesa de Dissertação - Pedro",
+                student: "Pedro Lima",
+                date: "2024-12-18",
+                time: "10:00",
+                duration: "2h",
+                type: "Presencial",
+                status: "Confirmada"
+            }
+        ];
+
+        // Current section tracking
+        let currentSection = 'dashboard';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadDashboardData();
+            generateCalendar();
+            initializeCharts();
+        });
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            };
+            
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('pt-BR', dateOptions);
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString('pt-BR', timeOptions);
+        }
+
+        // Navigation functions
+        function showProjectDetail(projectId) {
+            currentProjectId = projectId;
+            const project = projects.find(p => p.id === projectId);
+            
+            if (project) {
+                // Update project detail information
+                document.getElementById('projectDetailTitle').textContent = project.title;
+                document.getElementById('projectDetailDescription').textContent = project.description;
+                document.getElementById('projectProgress').textContent = project.progress + '%';
+                document.getElementById('projectProgressBar').style.width = project.progress + '%';
+                document.getElementById('projectType').textContent = project.type;
+                document.getElementById('projectStatus').textContent = project.status;
+                document.getElementById('projectPriority').textContent = project.priority;
+                document.getElementById('projectStartDate').textContent = new Date(project.startDate).toLocaleDateString('pt-BR');
+                document.getElementById('projectEndDate').textContent = new Date(project.endDate).toLocaleDateString('pt-BR');
+                
+                // Load project stages
+                loadProjectStages(projectId);
+                
+                // Show project detail section
+                showSection('projectDetail');
+            }
+        }
+
+        function showSection(section) {
+            // Hide all sections
+            const sections = ['dashboard', 'projects', 'students', 'calendar', 'tasks', 'documents', 'meetings', 'chat', 'reports', 'settings', 'projectDetail'];
+            sections.forEach(s => {
+                const element = document.getElementById(s + 'Section');
+                if (element) element.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(section + 'Section');
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                currentSection = section;
+            }
+            
+            // Update page title
+            const titles = {
+                'dashboard': 'Dashboard',
+                'projects': 'Projetos',
+                'students': 'Orientandos',
+                'calendar': 'Calendário',
+                'settings': 'Configurações',
+                'projectDetail': 'Detalhes do Projeto'
+            };
+            document.getElementById('pageTitle').textContent = titles[section] || 'Dashboard';
+            
+            // Update sidebar active state
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active-sidebar');
+            });
+            event.target.classList.add('active-sidebar');
+            
+            // Load section-specific data
+            switch(section) {
+                case 'projects':
+                    loadProjects();
+                    break;
+                case 'students':
+                    loadStudents();
+                    break;
+                case 'tasks':
+                    loadTasks();
+                    break;
+                case 'documents':
+                    loadDocuments();
+                    break;
+                case 'meetings':
+                    loadMeetings();
+                    break;
+                case 'chat':
+                    loadChat();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+            }
+        }
+
+        // Dashboard functions
+        function loadDashboardData() {
+            loadRecentProjects();
+            loadUpcomingDeadlines();
+        }
+
+        function loadRecentProjects() {
+            const container = document.getElementById('recentProjects');
+            container.innerHTML = '';
+            
+            projects.slice(0, 3).forEach(project => {
+                const statusColors = {
+                    'Em andamento': 'bg-blue-100 text-blue-800',
+                    'Em revisão': 'bg-yellow-100 text-yellow-800',
+                    'Concluído': 'bg-green-100 text-green-800'
+                };
+                
+                const item = document.createElement('div');
+                item.className = 'flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer';
+                item.innerHTML = `
+                    <div class="w-3 h-3 bg-blue-500 rounded-full mr-4"></div>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-800">${project.title}</h4>
+                        <p class="text-sm text-gray-600">${project.student} • ${project.type}</p>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full ${statusColors[project.status]}">${project.progress}%</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function loadUpcomingDeadlines() {
+            const container = document.getElementById('upcomingDeadlines');
+            container.innerHTML = '';
+            
+            const deadlines = [
+                { title: "Entrega Capítulo 3", student: "Maria Santos", date: "2024-12-20", type: "Documento" },
+                { title: "Defesa de Dissertação", student: "Pedro Lima", date: "2024-12-18", type: "Apresentação" },
+                { title: "Relatório Mensal", student: "Ana Costa", date: "2024-12-22", type: "Relatório" }
+            ];
+            
+            deadlines.forEach(deadline => {
+                const daysUntil = Math.ceil((new Date(deadline.date) - new Date()) / (1000 * 60 * 60 * 24));
+                const urgencyColor = daysUntil <= 3 ? 'border-red-500 bg-red-50' : daysUntil <= 7 ? 'border-orange-500 bg-orange-50' : 'border-blue-500 bg-blue-50';
+                
+                const item = document.createElement('div');
+                item.className = `flex items-start p-4 rounded-lg border-l-4 ${urgencyColor}`;
+                item.innerHTML = `
+                    <div class="text-center mr-4">
+                        <div class="text-lg font-bold text-gray-800">${daysUntil}</div>
+                        <div class="text-xs text-gray-600">dias</div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-medium text-gray-800">${deadline.title}</h4>
+                        <p class="text-sm text-gray-600">${deadline.student}</p>
+                        <p class="text-xs text-gray-500">${deadline.type}</p>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Projects functions
+        function loadProjects() {
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = '';
+            
+            projects.forEach(project => {
+                const statusColors = {
+                    'Em andamento': 'bg-blue-100 text-blue-800',
+                    'Em revisão': 'bg-yellow-100 text-yellow-800',
+                    'Concluído': 'bg-green-100 text-green-800',
+                    'Pausado': 'bg-gray-100 text-gray-800'
+                };
+                
+                const priorityColors = {
+                    'Alta': 'text-red-600',
+                    'Média': 'text-yellow-600',
+                    'Baixa': 'text-green-600'
+                };
+                
+                const card = document.createElement('div');
+                card.className = 'project-card bg-white rounded-xl shadow-lg p-6 border border-gray-200';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2">
+                            <h3 class="text-lg font-bold text-gray-800">${project.title}</h3>
+                            <i class="fas fa-flag text-sm ${priorityColors[project.priority]}"></i>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full ${statusColors[project.status]}">${project.status}</span>
+                    </div>
+                    
+                    <p class="text-gray-600 text-sm mb-4">${project.description}</p>
+                    
+                    <div class="flex items-center mb-4 space-x-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-user text-gray-400 mr-2"></i>
+                            <span class="text-sm text-gray-600">${project.student}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-tag text-gray-400 mr-2"></i>
+                            <span class="text-sm text-gray-600">${project.type}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-gray-600">Progresso</span>
+                            <span class="text-sm font-medium text-gray-800">${project.progress}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-blue-500" style="width: ${project.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-4">
+                        <span>Início: ${new Date(project.startDate).toLocaleDateString('pt-BR')}</span>
+                        <span>Fim: ${new Date(project.endDate).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="viewProject(${project.id})" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                            Ver Detalhes
+                        </button>
+                        <button onclick="editProject(${project.id})" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Students functions
+        function loadStudents() {
+            const grid = document.getElementById('studentsGrid');
+            grid.innerHTML = '';
+            
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-all';
+                card.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mr-4">
+                            <span class="text-white font-bold">${student.avatar}</span>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-lg font-bold text-gray-800">${student.name}</h3>
+                            <p class="text-sm text-gray-600">${student.course}</p>
+                        </div>
+                        <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-800">${student.status}</span>
+                    </div>
+                    
+                    <div class="space-y-2 mb-4">
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-id-card w-4 mr-2"></i>
+                            <span>Matrícula: ${student.matricula}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-envelope w-4 mr-2"></i>
+                            <span>${student.email}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-graduation-cap w-4 mr-2"></i>
+                            <span>${student.level}</span>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <i class="fas fa-project-diagram w-4 mr-2"></i>
+                            <span>${student.projects} projeto(s) ativo(s)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        <button onclick="viewStudent(${student.id})" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                            Ver Perfil
+                        </button>
+                        <button onclick="chatWithStudent(${student.id})" class="bg-green-600 text-white py-2 px-4 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                            <i class="fas fa-comments"></i>
+                        </button>
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Reports functions
+        function loadReports() {
+            // This would typically load report data
+            console.log('Loading reports...');
+        }
+
+        // Calendar functions
+        function generateCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            if (!grid) return;
+            
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            grid.innerHTML = '';
+            
+            // Add empty cells for days before month starts
+            for (let i = 0; i < firstDay; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'h-12';
+                grid.appendChild(cell);
+            }
+            
+            // Add days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cell = document.createElement('div');
+                cell.className = 'calendar-day h-12 flex items-center justify-center text-sm cursor-pointer rounded-lg hover:bg-blue-100 relative';
+                
+                if (day === today.getDate()) {
+                    cell.classList.add('bg-blue-600', 'text-white', 'font-bold');
+                }
+                
+                // Add events indicators
+                if ([15, 18, 20].includes(day)) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-red-500 rounded-full';
+                    cell.appendChild(indicator);
+                }
+                
+                cell.textContent = day;
+                grid.appendChild(cell);
+            }
+            
+            loadDayEvents();
+        }
+
+        function loadDayEvents() {
+            const container = document.getElementById('dayEvents');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-medium text-gray-800">Reunião de Orientação</h4>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">14:00</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Maria Santos</p>
+                    <p class="text-xs text-gray-500 mt-1">Discussão do capítulo 3</p>
+                </div>
+                
+                <div class="p-4 bg-green-50 rounded-lg border-l-4 border-green-500">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="font-medium text-gray-800">Revisão de Documento</h4>
+                        <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">16:30</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Pedro Lima</p>
+                    <p class="text-xs text-gray-500 mt-1">Análise do relatório</p>
+                </div>
+            `;
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            // Progress Chart
+            const progressCtx = document.getElementById('progressChart');
+            if (progressCtx) {
+                new Chart(progressCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                        datasets: [{
+                            label: 'Projetos Concluídos',
+                            data: [2, 3, 1, 4, 2, 5],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Status Chart
+            const statusCtx = document.getElementById('statusChart');
+            if (statusCtx) {
+                new Chart(statusCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Em Andamento', 'Concluídos', 'Em Revisão', 'Pausados'],
+                        datasets: [{
+                            data: [45, 30, 15, 10],
+                            backgroundColor: [
+                                'rgb(59, 130, 246)',
+                                'rgb(34, 197, 94)',
+                                'rgb(251, 191, 36)',
+                                'rgb(156, 163, 175)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+            
+            // Monthly Chart
+            const monthlyCtx = document.getElementById('monthlyChart');
+            if (monthlyCtx) {
+                new Chart(monthlyCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                        datasets: [{
+                            label: 'Atividades',
+                            data: [12, 19, 15, 25, 22, 18],
+                            backgroundColor: 'rgba(147, 51, 234, 0.8)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Modal functions
+        function showCreateProject() {
+            document.getElementById('createProjectModal').classList.remove('hidden');
+        }
+
+        function hideCreateProject() {
+            document.getElementById('createProjectModal').classList.add('hidden');
+        }
+
+        function showScheduleMeeting() {
+            alert('Funcionalidade de agendamento de reunião será implementada em breve!');
+        }
+
+        function showCreateEvent() {
+            alert('Funcionalidade de criação de evento será implementada em breve!');
+        }
+
+        function showCreateTask() {
+            alert('Funcionalidade de criação de tarefa será implementada em breve!');
+        }
+
+        function showUploadDocument() {
+            alert('Funcionalidade de upload de documento será implementada em breve!');
+        }
+
+        function showAddStudent() {
+            alert('Funcionalidade de adicionar orientando será implementada em breve!');
+        }
+
+        // Utility functions
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notificationDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        function viewProject(id) {
+            showProjectDetail(id);
+        }
+
+        function editProject(id) {
+            const project = projects.find(p => p.id === id);
+            alert(`Editando projeto: ${project.title}`);
+        }
+
+        function viewStudent(id) {
+            const student = students.find(s => s.id === id);
+            alert(`Visualizando perfil: ${student.name}`);
+        }
+
+        function chatWithStudent(id) {
+            showSection('chat');
+        }
+
+        // Project Stages Functions
+        function loadProjectStages(projectId) {
+            const container = document.getElementById('projectStages');
+            container.innerHTML = '';
+            
+            const stages = projectStages[projectId] || [];
+            
+            stages.forEach(stage => {
+                const statusColors = {
+                    'Não Iniciada': 'bg-gray-100 text-gray-800',
+                    'Em Progresso': 'bg-blue-100 text-blue-800',
+                    'Concluída': 'bg-green-100 text-green-800',
+                    'Pausada': 'bg-yellow-100 text-yellow-800'
+                };
+                
+                const priorityColors = {
+                    'Alta': 'text-red-600',
+                    'Média': 'text-yellow-600',
+                    'Baixa': 'text-green-600'
+                };
+                
+                const stageElement = document.createElement('div');
+                stageElement.className = 'bg-gray-50 rounded-xl p-6 border border-gray-200';
+                stageElement.innerHTML = `
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-3">
+                            <h4 class="text-lg font-bold text-gray-800">${stage.name}</h4>
+                            <i class="fas fa-flag text-sm ${priorityColors[stage.priority]}"></i>
+                            <span class="text-xs px-2 py-1 rounded-full ${statusColors[stage.status]}">${stage.status}</span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="showCreateTaskModal(${stage.id})" class="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-plus mr-1"></i>Tarefa
+                            </button>
+                            <button onclick="editStage(${stage.id})" class="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteStage(${stage.id})" class="bg-red-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-700 transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-gray-600 text-sm mb-4">${stage.description}</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="text-sm">
+                            <span class="text-gray-500">Início:</span>
+                            <span class="font-medium ml-2">${new Date(stage.startDate).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-500">Fim:</span>
+                            <span class="font-medium ml-2">${new Date(stage.endDate).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div class="text-sm">
+                            <span class="text-gray-500">Progresso:</span>
+                            <span class="font-medium ml-2">${stage.progress}%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full bg-blue-500" style="width: ${stage.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2" id="stage-${stage.id}-tasks">
+                        <h5 class="font-semibold text-gray-800 mb-3">Tarefas (${stage.tasks.length})</h5>
+                        ${loadStageTasks(stage.tasks, stage.id)}
+                    </div>
+                `;
+                
+                container.appendChild(stageElement);
+            });
+            
+            updateProjectStats(projectId);
+        }
+        
+        function loadStageTasks(tasks, stageId) {
+            if (!tasks || tasks.length === 0) {
+                return '<p class="text-gray-500 text-sm italic">Nenhuma tarefa criada ainda.</p>';
+            }
+            
+            return tasks.map(task => {
+                const statusColors = {
+                    'Pendente': 'bg-gray-100 text-gray-800',
+                    'Em Progresso': 'bg-blue-100 text-blue-800',
+                    'Concluída': 'bg-green-100 text-green-800',
+                    'Cancelada': 'bg-red-100 text-red-800'
+                };
+                
+                const priorityColors = {
+                    'Alta': 'border-red-500',
+                    'Média': 'border-yellow-500',
+                    'Baixa': 'border-green-500'
+                };
+                
+                return `
+                    <div class="flex items-center justify-between p-3 bg-white rounded-lg border-l-4 ${priorityColors[task.priority]} hover:bg-gray-50 transition-colors">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-2 mb-1">
+                                <h6 class="font-medium text-gray-800">${task.name}</h6>
+                                <span class="text-xs px-2 py-1 rounded-full ${statusColors[task.status]}">${task.status}</span>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-2">${task.description}</p>
+                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                <span><i class="fas fa-user mr-1"></i>${task.assignee}</span>
+                                <span><i class="fas fa-calendar mr-1"></i>${new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
+                                <span><i class="fas fa-flag mr-1"></i>${task.priority}</span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-1">
+                            <button onclick="editTask(${task.id}, ${stageId})" class="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors">
+                                <i class="fas fa-edit text-sm"></i>
+                            </button>
+                            <button onclick="deleteTask(${task.id}, ${stageId})" class="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors">
+                                <i class="fas fa-trash text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateProjectStats(projectId) {
+            const stages = projectStages[projectId] || [];
+            const completedStages = stages.filter(s => s.status === 'Concluída').length;
+            const allTasks = stages.flatMap(s => s.tasks || []);
+            const pendingTasks = allTasks.filter(t => t.status === 'Pendente').length;
+            
+            document.getElementById('completedStages').textContent = completedStages;
+            document.getElementById('pendingTasks').textContent = pendingTasks;
+        }
+
+        // Stage CRUD Functions
+        function showCreateStage() {
+            document.getElementById('createStageModal').classList.remove('hidden');
+        }
+
+        function hideCreateStage() {
+            document.getElementById('createStageModal').classList.add('hidden');
+            document.getElementById('createStageModal').querySelector('form').reset();
+        }
+
+        function createStage(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const newStage = {
+                id: Date.now(),
+                name: document.getElementById('stageName').value,
+                description: document.getElementById('stageDescription').value,
+                startDate: document.getElementById('stageStartDate').value,
+                endDate: document.getElementById('stageEndDate').value,
+                priority: document.getElementById('stagePriority').value,
+                status: 'Não Iniciada',
+                progress: 0,
+                tasks: []
+            };
+            
+            if (!projectStages[currentProjectId]) {
+                projectStages[currentProjectId] = [];
+            }
+            
+            projectStages[currentProjectId].push(newStage);
+            loadProjectStages(currentProjectId);
+            hideCreateStage();
+            
+            // Show success message
+            showNotification('Etapa criada com sucesso!', 'success');
+        }
+
+        function editStage(stageId) {
+            const stage = projectStages[currentProjectId].find(s => s.id === stageId);
+            if (!stage) return;
+            
+            // Populate edit form
+            document.getElementById('editStageId').value = stage.id;
+            document.getElementById('editStageName').value = stage.name;
+            document.getElementById('editStageDescription').value = stage.description;
+            document.getElementById('editStageStartDate').value = stage.startDate;
+            document.getElementById('editStageEndDate').value = stage.endDate;
+            document.getElementById('editStageStatus').value = stage.status;
+            document.getElementById('editStagePriority').value = stage.priority;
+            
+            document.getElementById('editStageModal').classList.remove('hidden');
+        }
+
+        function hideEditStage() {
+            document.getElementById('editStageModal').classList.add('hidden');
+        }
+
+        function updateStage(event) {
+            event.preventDefault();
+            
+            const stageId = parseInt(document.getElementById('editStageId').value);
+            const stageIndex = projectStages[currentProjectId].findIndex(s => s.id === stageId);
+            
+            if (stageIndex !== -1) {
+                projectStages[currentProjectId][stageIndex] = {
+                    ...projectStages[currentProjectId][stageIndex],
+                    name: document.getElementById('editStageName').value,
+                    description: document.getElementById('editStageDescription').value,
+                    startDate: document.getElementById('editStageStartDate').value,
+                    endDate: document.getElementById('editStageEndDate').value,
+                    status: document.getElementById('editStageStatus').value,
+                    priority: document.getElementById('editStagePriority').value
+                };
+                
+                loadProjectStages(currentProjectId);
+                hideEditStage();
+                showNotification('Etapa atualizada com sucesso!', 'success');
+            }
+        }
+
+        function deleteStage(stageId) {
+            if (confirm('Tem certeza que deseja excluir esta etapa? Todas as tarefas associadas também serão excluídas.')) {
+                const stageIndex = projectStages[currentProjectId].findIndex(s => s.id === stageId);
+                if (stageIndex !== -1) {
+                    projectStages[currentProjectId].splice(stageIndex, 1);
+                    loadProjectStages(currentProjectId);
+                    showNotification('Etapa excluída com sucesso!', 'success');
+                }
+            }
+        }
+
+        // Task CRUD Functions
+        function showCreateTaskModal(stageId) {
+            document.getElementById('taskStageId').value = stageId;
+            document.getElementById('createTaskModal').classList.remove('hidden');
+        }
+
+        function hideCreateTask() {
+            document.getElementById('createTaskModal').classList.add('hidden');
+            document.getElementById('createTaskModal').querySelector('form').reset();
+        }
+
+        function createTask(event) {
+            event.preventDefault();
+            
+            const stageId = parseInt(document.getElementById('taskStageId').value);
+            const newTask = {
+                id: Date.now(),
+                name: document.getElementById('taskName').value,
+                description: document.getElementById('taskDescription').value,
+                dueDate: document.getElementById('taskDueDate').value,
+                priority: document.getElementById('taskPriority').value,
+                assignee: document.getElementById('taskAssignee').value,
+                status: 'Pendente'
+            };
+            
+            const stageIndex = projectStages[currentProjectId].findIndex(s => s.id === stageId);
+            if (stageIndex !== -1) {
+                if (!projectStages[currentProjectId][stageIndex].tasks) {
+                    projectStages[currentProjectId][stageIndex].tasks = [];
+                }
+                projectStages[currentProjectId][stageIndex].tasks.push(newTask);
+                loadProjectStages(currentProjectId);
+                hideCreateTask();
+                showNotification('Tarefa criada com sucesso!', 'success');
+            }
+        }
+
+        function editTask(taskId, stageId) {
+            const stage = projectStages[currentProjectId].find(s => s.id === stageId);
+            const task = stage.tasks.find(t => t.id === taskId);
+            
+            if (!task) return;
+            
+            // Populate edit form
+            document.getElementById('editTaskId').value = task.id;
+            document.getElementById('editTaskStageId').value = stageId;
+            document.getElementById('editTaskName').value = task.name;
+            document.getElementById('editTaskDescription').value = task.description;
+            document.getElementById('editTaskDueDate').value = task.dueDate;
+            document.getElementById('editTaskStatus').value = task.status;
+            document.getElementById('editTaskPriority').value = task.priority;
+            document.getElementById('editTaskAssignee').value = task.assignee;
+            
+            document.getElementById('editTaskModal').classList.remove('hidden');
+        }
+
+        function hideEditTask() {
+            document.getElementById('editTaskModal').classList.add('hidden');
+        }
+
+        function updateTask(event) {
+            event.preventDefault();
+            
+            const taskId = parseInt(document.getElementById('editTaskId').value);
+            const stageId = parseInt(document.getElementById('editTaskStageId').value);
+            
+            const stageIndex = projectStages[currentProjectId].findIndex(s => s.id === stageId);
+            const taskIndex = projectStages[currentProjectId][stageIndex].tasks.findIndex(t => t.id === taskId);
+            
+            if (stageIndex !== -1 && taskIndex !== -1) {
+                projectStages[currentProjectId][stageIndex].tasks[taskIndex] = {
+                    ...projectStages[currentProjectId][stageIndex].tasks[taskIndex],
+                    name: document.getElementById('editTaskName').value,
+                    description: document.getElementById('editTaskDescription').value,
+                    dueDate: document.getElementById('editTaskDueDate').value,
+                    status: document.getElementById('editTaskStatus').value,
+                    priority: document.getElementById('editTaskPriority').value,
+                    assignee: document.getElementById('editTaskAssignee').value
+                };
+                
+                loadProjectStages(currentProjectId);
+                hideEditTask();
+                showNotification('Tarefa atualizada com sucesso!', 'success');
+            }
+        }
+
+        function deleteTask(taskId, stageId) {
+            if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                const stageIndex = projectStages[currentProjectId].findIndex(s => s.id === stageId);
+                const taskIndex = projectStages[currentProjectId][stageIndex].tasks.findIndex(t => t.id === taskId);
+                
+                if (stageIndex !== -1 && taskIndex !== -1) {
+                    projectStages[currentProjectId][stageIndex].tasks.splice(taskIndex, 1);
+                    loadProjectStages(currentProjectId);
+                    showNotification('Tarefa excluída com sucesso!', 'success');
+                }
+            }
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+                type === 'success' ? 'bg-green-600 text-white' : 
+                type === 'error' ? 'bg-red-600 text-white' : 
+                'bg-blue-600 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        function editCurrentProject() {
+            alert('Funcionalidade de edição de projeto será implementada em breve!');
+        }
+
+        
+
+        // Event listeners
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (!e.target.closest('.relative') && dropdown) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Chat input enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.target.id === 'chatInput' && e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97f3a6dca1f82507',t:'MTc1Nzg5MjQxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

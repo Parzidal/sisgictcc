@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sistema de Orientação Acadêmica - Landing Page</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        /* ✅ AJUSTE: Adicionada rolagem suave para links de âncora como #features */
+        html { scroll-behavior: smooth; }
+        
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+        .calendar-day { transition: all 0.2s ease; }
+        .calendar-day:hover { transform: scale(1.05); }
+        .project-card { transition: all 0.3s ease; }
+        .project-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div id="landingPage" class="min-h-screen">
+        <header class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white sticky top-0 z-50 shadow-md">
+            <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-white bg-opacity-20 w-10 h-10 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-white text-xl"></i>
+                        </div>
+                        <h1 class="text-xl font-bold">SISGIC</h1>
+                    </div>
+                    <div class="space-x-4">
+                        <a href="login.html" class="text-white hover:text-blue-200 transition-colors">Entrar</a>
+                        <a href="cadastro.html" class="bg-white text-blue-900 px-6 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors">Cadastrar</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+        
+        <main>
+             <div class="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                        <div class="fade-in">
+                            <h2 class="text-5xl font-bold mb-6 leading-tight">
+                                Gerencie suas <span class="text-blue-300"><br>iniciações científicas</span> de forma inteligente
+                            </h2>
+                            <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+                                Plataforma para orientadores e orientandos organizarem projetos, agendarem reuniões e acompanharem o progresso de trabalhos e projetos acadêmicos.
+                            </p>
+                            <div class="space-x-4">
+                                <a href="cadastro.html" class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg">
+                                    Começar Agora
+                                </a>
+                                <a href="#features" class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-900 transition-all">
+                                    Saiba Mais
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="relative">
+                            <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8 shadow-2xl">
+                                <div class="space-y-4">
+                                    <div class="flex items-center space-x-3 p-4 bg-white bg-opacity-20 rounded-lg">
+                                        <div class="w-3 h-3 bg-green-400 rounded-full"></div>
+                                        <span class="text-white">Organize seus projetos ativos</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-4 bg-white bg-opacity-20 rounded-lg">
+                                        <div class="w-3 h-3 bg-blue-400 rounded-full"></div>
+                                        <span class="text-white">Gerencie os orientandos</span>
+                                    </div>
+                                    <div class="flex items-center space-x-3 p-4 bg-white bg-opacity-20 rounded-lg">
+                                        <div class="w-3 h-3 bg-orange-400 rounded-full"></div>
+                                        <span class="text-white">Marque e notifique reuniões</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <section id="features" class="py-20 bg-gray-50">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <h3 class="text-4xl font-bold text-gray-800 mb-4">Funcionalidades Principais</h3>
+                        <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                            Tudo que você precisa para uma orientação acadêmica eficiente e organizada
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
+                            <div class="bg-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                                <i class="fas fa-project-diagram text-blue-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">Gestão de Projetos</h4>
+                            <p class="text-gray-600">Crie, organize e acompanhe o progresso de todos os projetos de orientação em um só lugar.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
+                            <div class="bg-green-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                                <i class="fas fa-calendar-alt text-green-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">Calendário e Reuniões</h4>
+                            <p class="text-gray-600">Agende reuniões, defesas e prazos com notificações automáticas para todos os envolvidos.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-2">
+                            <div class="bg-purple-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6">
+                                <i class="fas fa-users text-purple-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">Colaboração</h4>
+                            <p class="text-gray-600">Facilite a comunicação entre orientadores e orientandos com ferramentas integradas.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+                    <h3 class="text-4xl font-bold mb-6">Pronto para começar?</h3>
+                    <p class="text-xl mb-8 text-blue-100">
+                        Entre na nossa plataforma e organize sua iniciação científica
+                    </p>
+                    <div class="space-x-4">
+                        <a href="cadastro.html" class="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-lg">
+                            Criar Conta Gratuita
+                        </a>
+                        <a href="login.html" class="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-blue-600 transition-all">
+                            Já tenho conta
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="py-20 bg-white">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <h3 class="text-4xl font-bold text-gray-800 mb-12">Sobre o projeto</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
+                            <div class="bg-blue-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                                <i class="fas fa-microscope text-blue-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">O que é Iniciação Científica?</h4>
+                            <p class="text-gray-600">A Iniciação Científica (IC) é um programa que introduz estudantes universitários ao mundo da pesquisa acadêmica, permitindo a participação em projetos sob orientação de professores qualificados.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
+                            <div class="bg-green-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                                <i class="fas fa-chart-line text-green-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">O Papel da Iniciação Científica na Formação do Pesquisador</h4>
+                            <p class="text-gray-600">A IC envolve atividades como revisão bibliográfica, coleta de dados, análise de resultados e elaboração de relatórios finais, ajudando estudantes a desenvolverem habilidades práticas em pesquisa.</p>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-2xl shadow-lg hover:shadow-xl transition">
+                            <div class="bg-purple-100 w-16 h-16 rounded-xl flex items-center justify-center mb-6 mx-auto">
+                                <i class="fas fa-lightbulb text-purple-600 text-2xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold text-gray-800 mb-4">Benefícios</h4>
+                            <p class="text-gray-600">Participar da IC enriquece o currículo, prepara para carreiras acadêmicas e profissionais, e fomenta a inovação. Nossa plataforma facilita a gestão desses projetos para maximizar os resultados.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="bg-gray-900 text-white py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    <div>
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-graduation-cap text-white"></i>
+                            </div>
+                            <span class="font-bold">Sistema de Orientação</span>
+                        </div>
+                        <p class="text-gray-400">Plataforma completa para gestão de orientações acadêmicas.</p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-4">Eduardo Mansur</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="https://www.linkedin.com/in/eduardo-bittencourt-b4147b248/" target="_blank" class="hover:text-white transition-colors">LinkedIn</a></li>
+                            <li><a href="https://github.com/Parzidal" target="_blank" class="hover:text-white transition-colors">Portifolio</a></li>
+                            <li><a href="https://www.instagram.com/edumansur02/" target="_blank" class="hover:text-white transition-colors">Instagram</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold mb-4">Suporte</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="https://drive.google.com/file/d/1f9m_8IBD7_fGAc4NjR2Q9c5G_N3LC4HA/view?usp=sharing" target="_blank" class="hover:text-white transition-colors">Documentação</a></li>
+                            <li><a href="https://youtu.be/TEgySQ6DWrw" target="_blank" class="hover:text-white transition-colors">Tutoriais</a></li>
+                            <li><a href="#" class="hover:text-white transition-colors">Repositório</a></li>
+                        </ul>
+                    </div>
+                     <div>
+                        <h4 class="font-semibold mb-4">Geovani Piovizani</h4>
+                        <ul class="space-y-2 text-gray-400">
+                            <li><a href="https://www.linkedin.com/in/geovani-piovizani/" target="_blank" class="hover:text-white transition-colors">LinkedIn</a></li>
+                            <li><a href="https://github.com/Pizaninn" target="_blank" class="hover:text-white transition-colors">Portifolio</a></li>
+                            <li><a href="https://www.instagram.com/geovani_piovizani/" target="_blank" class="hover:text-white transition-colors">Instagram</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                    <p>&copy; <a href="https://www.linkedin.com/in/eduardo-bittencourt-b4147b248/" target="_blank" class="hover:text-white transition-colors">Eduardo Mansur</a> e <a href="https://www.linkedin.com/in/geovani-piovizani/" target="_blank" class="hover:text-white transition-colors">Geovani Piovizani</a>. Todos os direitos reservados. 2025.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
